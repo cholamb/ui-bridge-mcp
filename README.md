@@ -1,5 +1,7 @@
 # UiBridge MCP
 
+**[English](README.md)** | [한국어](README.ko.md)
+
 **Screenshot-free Windows automation for LLM agents.**
 
 An MCP server that lets Claude Code (or any MCP client) control **native Windows
@@ -26,20 +28,6 @@ or resizes. UiBridge does the opposite:
 Plus `run_steps` — batch multiple operations (with `verify_window` / `wait_ms`
 checkpoints) into a single call.
 
-## Performance
-
-Connections are cached instead of re-created per command (auto-reconnect on drop):
-
-- Web element read: **~2.6 ms/call** (vs seconds when handshaking per call)
-- Window connect: ~0.9 s first → **~5 ms** cached
-- CDP port auto-discovery: if nothing listens on the default 9222, known
-  fallback ports are scanned (`UIBRIDGE_CDP_FALLBACK_PORTS` env var)
-
-## Requirements
-
-- Windows 10/11, Python 3.10+
-- Chrome or Edge (for the web tools)
-
 ## Install
 
 ```bat
@@ -63,6 +51,85 @@ python tests\stage3_harness.py
 python tests\win32_harness.py
 ```
 
+**Requirements**: Windows 10/11, Python 3.10+, Chrome or Edge (for web tools).
+
+## Usage examples
+
+Once registered, just talk to Claude Code — it picks the right tools. Below,
+each prompt is followed by what actually happens under the hood.
+
+### 1. Drive a desktop app
+
+> *"Open Notepad and type 'hello world' into it, then read it back."*
+
+```
+inspect_tree(window_title="Notepad")            → finds the edit area (automation_id=15)
+set_value(window_title="Notepad", automation_id="15", value="hello world")
+get_value(window_title="Notepad", automation_id="15")   → "hello world"
+```
+
+No screenshot was taken, no coordinates were guessed. Works even if the
+window is resized, moved, or behind other windows.
+
+### 2. Fill a web form
+
+> *"Log in to the admin page on the debug browser."*
+
+```
+web_goto(url="https://example.com/login")        → waits for readyState=complete
+web_fill(form_data={"#username": "admin", "#password": "..."})
+web_click_element(selector="button[type=submit]")
+web_wait(selector=".dashboard", timeout_ms=15000)
+```
+
+### 3. An app that hides from UIA (custom framework)
+
+Some apps (e.g. chat apps built on custom renderers) expose almost nothing
+to UI Automation. Fall to tier 2:
+
+```
+win32_find(window_title="MyChatApp", class_name="Edit", visible_only=false)
+   → [{hwnd: 132002, class: "Edit", size: [326, 28], ...}]
+win32_set_text(hwnd=132002, text="search keyword")    → WM_SETTEXT, no focus steal
+win32_find(window_title="MyChatApp", text_re="ChatRoomList")
+   → even custom sub-views are Win32 child windows with names and rectangles
+```
+
+### 4. Purely custom-rendered surface (tier 3)
+
+```
+screenshot_window(window_title="MyChatApp", annotate=true)
+   → {path: "...png", elements: [{n: 3, name: "Send", center: [1240, 890]}, ...]}
+# the model looks at the numbered overlay, picks #3:
+click_at(x=1240, y=890)
+```
+
+The model never guesses pixels — it picks an element number, the click point
+comes from the UIA rectangle.
+
+### 5. Batch a known flow into one call
+
+```json
+run_steps(steps=[
+  {"tool": "set_value",     "args": {"window_title": "Notepad", "automation_id": "15", "value": "report done"}},
+  {"tool": "wait_ms",       "args": {"ms": 200}},
+  {"tool": "get_value",     "args": {"window_title": "Notepad", "automation_id": "15"}},
+  {"tool": "verify_window", "args": {"window_title": "Notepad"}}
+])
+```
+
+Stops at the first failing step and returns per-step results, so the agent
+can inspect and resume from exactly where it broke.
+
+## Performance
+
+Connections are cached instead of re-created per command (auto-reconnect on drop):
+
+- Web element read: **~2.6 ms/call** (vs seconds when handshaking per call)
+- Window connect: ~0.9 s first → **~5 ms** cached
+- CDP port auto-discovery: if nothing listens on the default 9222, known
+  fallback ports are scanned (`UIBRIDGE_CDP_FALLBACK_PORTS` env var)
+
 ## Tools (23)
 
 - **Discovery**: `list_windows`, `inspect_tree`
@@ -73,14 +140,11 @@ python tests\win32_harness.py
 - **Web (CDP)**: `web_tabs`, `web_goto`, `web_page_info`, `web_click_element`,
   `web_type_text`, `web_read_text`, `web_find_elements`, `web_run_js`,
   `web_fill`, `web_wait`
-- **Win32 low-level** (fallback tier 2): `win32_find` (filter by class /
-  control ID / text regex; `visible_only=false` includes hidden controls),
-  `win32_get_text` / `win32_set_text` (WM_GETTEXT / WM_SETTEXT — no focus
-  needed), `win32_click` (BM_CLICK / posted mouse messages), `win32_key`
-- **Screen & coordinates** (fallback tier 3): `screenshot_window` (numbered
-  UIA overlay + element map), `click_at`, `drag`, `scroll_at`, `send_keys`
-- **Batch**: `run_steps` — several steps in one call, stops at the first
-  failing step so you can inspect and resume
+- **Win32 low-level** (fallback tier 2): `win32_find`, `win32_get_text`,
+  `win32_set_text`, `win32_click`, `win32_key`
+- **Screen & coordinates** (fallback tier 3): `screenshot_window`, `click_at`,
+  `drag`, `scroll_at`, `send_keys`
+- **Batch**: `run_steps`
 
 ## Config files
 
@@ -105,82 +169,11 @@ and deterministic scripts.
 - Every interaction is a local API call; nothing leaves your machine
 - No hardcoded secrets, no telemetry
 
+## Contributing
+
+Issues and PRs are welcome — especially reports of apps where the fallback
+ladder fails (attach `inspect_tree` / `win32_find` output if you can).
+
 ## License
 
-MIT
-
----
-
-# 한국어 안내
-
-**스크린샷 없이 Windows를 조종하는 LLM 에이전트용 MCP 서버입니다.**
-
-일반적인 비전 방식 컴퓨터 유즈는 매 단계 스크린샷을 찍어 모델이 좌표를
-추측합니다 — 느리고, 토큰이 많이 들고, 창 크기가 바뀌면 오클릭이 납니다.
-UiBridge는 반대로, 버튼·입력칸을 **이름/ID로 지목**해 조작합니다. 모든
-상호작용이 로컬 API(UIA·Win32·CDP)를 거치므로 화면 내용이 외부로 나가지
-않습니다.
-
-## 3단 폴백 사다리
-
-| 단계 | 방식 | 대상 |
-|---|---|---|
-| 1 | **UIA / CDP** (기본) | 접근성을 노출하는 대부분의 앱·모든 웹 |
-| 2 | **Win32 메시지** (`win32_find`/`win32_set_text`/`win32_click`) | UIA를 숨기는 커스텀 프레임워크 앱 — 표준 Edit/Button 자식 창과 내부 뷰를 클래스·컨트롤ID·텍스트로 탐색, 포커스 안 뺏고 백그라운드 창에도 주입 |
-| 3 | **주석 스크린샷 + 좌표** (`screenshot_window`+`click_at`) | 순수 렌더 영역 — 스크린샷에 UIA 요소 번호를 오버레이해 모델은 번호만 고르고 좌표는 코드가 계산 (Set-of-Marks) |
-
-여기에 `run_steps` 배치(여러 단계를 1회 호출로, 단계별 검증 포함)까지 —
-알려진 흐름은 왕복 없이 한 번에 실행됩니다.
-
-## 설치
-
-```bat
-python -m pip install -r requirements.txt
-python install.py        :: ~/.claude/settings.json에 자동 등록
-:: Claude Code 재시작하면 ui-bridge 도구가 보입니다
-```
-
-웹 기능은 브라우저를 디버그 모드로 띄우면 됩니다: `start_edge_debug.bat`
-(또는 `chrome.exe --remote-debugging-port=9222`)
-
-설치 확인은 `tests\` 폴더의 하네스로(메모장으로 자가 검증):
-
-```bat
-python tests\uia_harness.py
-```
-
-## 제공 도구
-
-- **탐색**: `list_windows`, `inspect_tree`
-- **상호작용**: `click_element`, `type_text`, `get_value`, `set_value`
-- **북마크·액션**: 자주 쓰는 요소를 이름으로 저장, 파라미터화된 다단계 시퀀스 실행
-- **웹(CDP)**: `web_tabs`, `web_goto`, `web_page_info`, `web_click_element`,
-  `web_type_text`, `web_read_text`, `web_find_elements`, `web_run_js`,
-  `web_fill`, `web_wait`
-- **Win32 저수준**(폴백 2단): `win32_find`(클래스·컨트롤ID·텍스트 앵커,
-  `visible_only=false`로 숨김 포함), `win32_get_text`/`win32_set_text`
-  (WM_GETTEXT/WM_SETTEXT, 포커스·전면 불필요), `win32_click`(BM_CLICK/post),
-  `win32_key`
-- **화면·좌표 폴백**(3단): `screenshot_window`(주석=UIA 요소 번호
-  오버레이+좌표 매핑), `click_at`, `drag`, `scroll_at`, `send_keys`
-- **배치**: `run_steps` — 여러 단계를 1회 호출로 실행, 실패 시 해당 단계에서
-  중단
-
-## 설정 파일
-
-`config/` 폴더에는 동작 예시(계산기, Excel)가 들어 있습니다.
-필요에 맞게 수정하거나 비우고 사용하세요.
-
-- `config/bookmarks.json` — 저장된 UI 요소 북마크
-- `config/apps.json` — 앱별 공통 로케이터 힌트
-- `config/actions.json` — 파라미터화된 멀티스텝 액션 시퀀스
-
-## 보안
-
-- 스크린샷 기본 미사용 — 3단 폴백에서만 로컬 temp에 저장하고 경로만 반환
-- 모든 상호작용이 로컬 API 호출 — 화면·데이터가 외부로 나가지 않음
-- 비밀값 하드코딩 없음, 텔레메트리 없음
-
-## 라이선스
-
-MIT
+MIT © [cholamb](https://github.com/cholamb)
