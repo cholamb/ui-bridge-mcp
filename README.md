@@ -1,8 +1,14 @@
 # UiBridge MCP
 
+### Computer Use for Windows — without the screenshots.
+
 **[English](README.md)** | [한국어](README.ko.md)
 
-**Screenshot-free Windows automation for LLM agents.**
+![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows) ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-server-8A2BE2) ![License](https://img.shields.io/badge/license-MIT-green)
+
+Your AI clicks buttons by *name*, not by guessing pixels on a screenshot —
+so it's fast (~ms per command), never misclicks when a window moves, and
+your screen never leaves your machine.
 
 An MCP server that lets Claude Code (or any MCP client) control **native Windows
 apps and web pages by element — not by pixel guessing**. Interactions go through

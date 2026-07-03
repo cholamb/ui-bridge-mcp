@@ -1,8 +1,14 @@
 # UiBridge MCP
 
+### 스크린샷 없는 윈도우 컴퓨터 유즈.
+
 [English](README.md) | **[한국어](README.ko.md)**
 
-**스크린샷 없이 Windows를 조종하는 LLM 에이전트용 MCP 서버.**
+![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows) ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-server-8A2BE2) ![License](https://img.shields.io/badge/license-MIT-green)
+
+AI가 스크린샷에서 픽셀을 추측하는 대신 버튼을 **이름으로** 클릭합니다 —
+그래서 빠르고(명령당 수 ms), 창이 움직여도 오클릭이 없고, 화면이 밖으로
+나가지 않습니다.
 
 Claude Code(또는 임의의 MCP 클라이언트)에 붙여서 **Windows 네이티브 앱과 웹
 페이지를 "픽셀 추측" 없이 요소 단위로 제어**합니다. 모든 상호작용이 로컬
