@@ -1,0 +1,41 @@
+[
+  {
+    "process_name": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "description": "Windows Calculator (UWP). Reliable AutomationIds for all buttons.",
+    "common_locators": {
+      "display": {"automation_id": "CalculatorResults", "control_type": "Text"},
+      "num0": {"automation_id": "num0Button", "control_type": "Button"},
+      "num1": {"automation_id": "num1Button", "control_type": "Button"},
+      "num2": {"automation_id": "num2Button", "control_type": "Button"},
+      "num3": {"automation_id": "num3Button", "control_type": "Button"},
+      "num4": {"automation_id": "num4Button", "control_type": "Button"},
+      "num5": {"automation_id": "num5Button", "control_type": "Button"},
+      "num6": {"automation_id": "num6Button", "control_type": "Button"},
+      "num7": {"automation_id": "num7Button", "control_type": "Button"},
+      "num8": {"automation_id": "num8Button", "control_type": "Button"},
+      "num9": {"automation_id": "num9Button", "control_type": "Button"},
+      "plus": {"automation_id": "plusButton", "control_type": "Button"},
+      "minus": {"automation_id": "minusButton", "control_type": "Button"},
+      "multiply": {"automation_id": "multiplyButton", "control_type": "Button"},
+      "divide": {"automation_id": "divideButton", "control_type": "Button"},
+      "equals": {"automation_id": "equalButton", "control_type": "Button"},
+      "clear": {"automation_id": "clearButton", "control_type": "Button"}
+    }
+  },
+  {
+    "process_name": "EXCEL",
+    "window_title_re": "Excel",
+    "description": "Microsoft Excel. Use NameBox to navigate to cells.",
+    "common_locators": {
+      "name_box": {"automation_id": "NameBox", "control_type": "Edit"},
+      "formula_bar": {"automation_id": "FormulaBar", "control_type": "Edit"}
+    }
+  },
+  {
+    "process_name": "WINWORD",
+    "window_title_re": "Word",
+    "description": "Microsoft Word.",
+    "common_locators": {}
+  }
+]

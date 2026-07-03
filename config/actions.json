@@ -1,0 +1,130 @@
+[
+  {
+    "name": "calc_compute",
+    "description": "Press a sequence of calculator buttons. Pass 'expression' as a string of button names separated by commas (e.g. 'calc_num5,calc_plus,calc_num3,calc_equals').",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "steps": [
+      {
+        "action": "click",
+        "target": "calc_clear",
+        "value": null,
+        "delay_after_ms": 100
+      }
+    ]
+  },
+  {
+    "name": "calc_add_two_numbers",
+    "description": "Add two single-digit numbers on Calculator. Parameters: a (first digit 0-9), b (second digit 0-9).",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "steps": [
+      {
+        "action": "click",
+        "target": "calc_clear",
+        "value": null,
+        "delay_after_ms": 100
+      },
+      {
+        "action": "click",
+        "target": "calc_num{a}",
+        "value": null,
+        "delay_after_ms": 100
+      },
+      {
+        "action": "click",
+        "target": "calc_plus",
+        "value": null,
+        "delay_after_ms": 100
+      },
+      {
+        "action": "click",
+        "target": "calc_num{b}",
+        "value": null,
+        "delay_after_ms": 100
+      },
+      {
+        "action": "click",
+        "target": "calc_equals",
+        "value": null,
+        "delay_after_ms": 200
+      },
+      {
+        "action": "get_value",
+        "target": "calc_display",
+        "value": null,
+        "delay_after_ms": 0
+      }
+    ]
+  },
+  {
+    "name": "excel_write_cell",
+    "description": "Write a value to a specific Excel cell. Parameters: cell_address (e.g. 'A1'), cell_value (the text to enter).",
+    "app_process": "EXCEL",
+    "window_title_re": "Excel",
+    "steps": [
+      {
+        "action": "click",
+        "target": "excel_name_box",
+        "value": null,
+        "delay_after_ms": 100
+      },
+      {
+        "action": "type_text",
+        "target": "excel_name_box",
+        "value": "{cell_address}",
+        "delay_after_ms": 50
+      },
+      {
+        "action": "key_press",
+        "target": "excel_name_box",
+        "value": "{ENTER}",
+        "delay_after_ms": 200
+      },
+      {
+        "action": "type_text",
+        "target": "excel_formula_bar",
+        "value": "{cell_value}",
+        "delay_after_ms": 50
+      },
+      {
+        "action": "key_press",
+        "target": "excel_formula_bar",
+        "value": "{ENTER}",
+        "delay_after_ms": 200
+      }
+    ]
+  },
+  {
+    "name": "excel_read_cell",
+    "description": "Read the value of a specific Excel cell. Parameters: cell_address (e.g. 'A1').",
+    "app_process": "EXCEL",
+    "window_title_re": "Excel",
+    "steps": [
+      {
+        "action": "click",
+        "target": "excel_name_box",
+        "value": null,
+        "delay_after_ms": 100
+      },
+      {
+        "action": "type_text",
+        "target": "excel_name_box",
+        "value": "{cell_address}",
+        "delay_after_ms": 50
+      },
+      {
+        "action": "key_press",
+        "target": "excel_name_box",
+        "value": "{ENTER}",
+        "delay_after_ms": 300
+      },
+      {
+        "action": "get_value",
+        "target": "excel_formula_bar",
+        "value": null,
+        "delay_after_ms": 0
+      }
+    ]
+  }
+]

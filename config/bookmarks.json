@@ -1,0 +1,135 @@
+[
+  {
+    "name": "calc_num0",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num0Button", "control_type": "Button"},
+    "description": "Calculator button 0"
+  },
+  {
+    "name": "calc_num1",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num1Button", "control_type": "Button"},
+    "description": "Calculator button 1"
+  },
+  {
+    "name": "calc_num2",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num2Button", "control_type": "Button"},
+    "description": "Calculator button 2"
+  },
+  {
+    "name": "calc_num3",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num3Button", "control_type": "Button"},
+    "description": "Calculator button 3"
+  },
+  {
+    "name": "calc_num4",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num4Button", "control_type": "Button"},
+    "description": "Calculator button 4"
+  },
+  {
+    "name": "calc_num5",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num5Button", "control_type": "Button"},
+    "description": "Calculator button 5"
+  },
+  {
+    "name": "calc_num6",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num6Button", "control_type": "Button"},
+    "description": "Calculator button 6"
+  },
+  {
+    "name": "calc_num7",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num7Button", "control_type": "Button"},
+    "description": "Calculator button 7"
+  },
+  {
+    "name": "calc_num8",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num8Button", "control_type": "Button"},
+    "description": "Calculator button 8"
+  },
+  {
+    "name": "calc_num9",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "num9Button", "control_type": "Button"},
+    "description": "Calculator button 9"
+  },
+  {
+    "name": "calc_plus",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "plusButton", "control_type": "Button"},
+    "description": "Calculator + button"
+  },
+  {
+    "name": "calc_minus",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "minusButton", "control_type": "Button"},
+    "description": "Calculator - button"
+  },
+  {
+    "name": "calc_multiply",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "multiplyButton", "control_type": "Button"},
+    "description": "Calculator × button"
+  },
+  {
+    "name": "calc_divide",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "divideButton", "control_type": "Button"},
+    "description": "Calculator ÷ button"
+  },
+  {
+    "name": "calc_equals",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "equalButton", "control_type": "Button"},
+    "description": "Calculator = button"
+  },
+  {
+    "name": "calc_clear",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "clearButton", "control_type": "Button"},
+    "description": "Calculator C (clear) button"
+  },
+  {
+    "name": "calc_display",
+    "app_process": "Calculator",
+    "window_title_re": "계산기|Calculator",
+    "locator": {"automation_id": "CalculatorResults", "control_type": "Text"},
+    "description": "Calculator result display"
+  },
+  {
+    "name": "excel_name_box",
+    "app_process": "EXCEL",
+    "window_title_re": "Excel",
+    "locator": {"automation_id": "NameBox", "control_type": "Edit"},
+    "description": "Excel Name Box (cell address input)"
+  },
+  {
+    "name": "excel_formula_bar",
+    "app_process": "EXCEL",
+    "window_title_re": "Excel",
+    "locator": {"automation_id": "FormulaBar", "control_type": "Edit"},
+    "description": "Excel Formula Bar"
+  }
+]
