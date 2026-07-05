@@ -41,11 +41,12 @@ python install.py        :: ~/.claude/settings.json에 자동 등록
 :: Claude Code 재시작하면 ui-bridge 도구가 보입니다
 ```
 
-웹 기능은 브라우저를 디버그 모드로 띄우면 됩니다:
+**웹 기능은 브라우저가 CDP 디버그 모드로 떠 있어야 합니다.** 가장 쉬운 방법:
+Claude에게 **"브라우저 열어줘"** 라고 하면 `launch_browser` 도구가 자동으로
+띄웁니다(독립 프로필이라 평소 쓰는 크롬과 충돌 안 함). 직접 띄우려면:
 
 ```bat
-start_edge_debug.bat
-:: 또는: chrome.exe --remote-debugging-port=9222
+start_browser_debug.bat
 ```
 
 설치 확인은 자가 검증 하네스로(메모장 사용):
@@ -141,7 +142,8 @@ run_steps(steps=[
 - **북마크·액션**: `bookmark_element`, `list_bookmarks`, `delete_bookmark`,
   `list_actions`, `run_action` — 자주 쓰는 요소를 이름으로 저장, 파라미터화된
   다단계 시퀀스 실행
-- **웹(CDP)**: `web_tabs`, `web_goto`, `web_page_info`, `web_click_element`,
+- **웹(CDP)**: `launch_browser`(디버그 브라우저 실행 — 웹 작업 전 먼저 호출),
+  `web_tabs`, `web_goto`, `web_page_info`, `web_click_element`,
   `web_type_text`, `web_read_text`, `web_find_elements`, `web_run_js`,
   `web_fill`, `web_wait`
 - **Win32 저수준**(폴백 2단): `win32_find`, `win32_get_text`, `win32_set_text`,
@@ -166,6 +168,28 @@ python cli.py --help
 ```
 
 MCP 클라이언트 없이 같은 기능을 실행합니다 — 예약작업·결정형 스크립트에 유용.
+
+## 문제 해결
+
+**웹 도구가 "Cannot connect to browser CDP" 오류를 냅니다.**
+`web_*` 도구는 CDP 디버그 모드로 실행된 브라우저가 필요합니다. 둘 중 하나로:
+- Claude에게 **"브라우저 열어줘"** (`launch_browser` 도구 실행), 또는
+- ui-bridge 폴더에서 **`start_browser_debug.bat`** 실행.
+
+**크롬을 `--remote-debugging-port`로 띄웠는데도 연결이 안 됩니다.**
+가장 흔한 함정입니다: **일반 크롬 창이 이미 열려 있으면** 크롬이 그 플래그를
+기존 인스턴스로 넘겨버려 **디버그 포트가 안 열립니다**. `launch_browser` /
+`start_browser_debug.bat`(독립 프로필로 이 문제를 회피)를 쓰거나, **모든** 크롬
+창을 먼저 닫으세요.
+
+**디버그 브라우저에 내 사이트가 로그인돼 있지 않습니다.**
+독립 프로필을 쓰기 때문입니다(위 충돌을 피하는 방식). 그 창에서 한 번 로그인하면
+프로필이 유지돼 다음 실행에도 남아 있습니다.
+
+**네이티브(웹 아닌) 앱을 못 찾습니다.**
+`inspect_tree(window_title=...)`로 노출 상태를 확인하세요. 거의 비어 있으면 그
+앱이 UI Automation을 숨기는 것이라 `win32_*` 도구(`win32_find`에 `visible_only=false`)를
+쓰고, 최후에는 `screenshot_window`를 씁니다.
 
 ## 보안
 

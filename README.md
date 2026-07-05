@@ -42,11 +42,13 @@ python install.py        :: registers the server in ~/.claude/settings.json
 :: restart Claude Code — the ui-bridge tools appear
 ```
 
-For web automation, start a browser in debug mode:
+**For web automation, a browser must be running in CDP debug mode.** Easiest:
+just ask Claude to **"launch the browser"** — the `launch_browser` tool starts
+one automatically (isolated profile, so it won't clash with your normal Chrome).
+Or start it yourself:
 
 ```bat
-start_edge_debug.bat
-:: or: chrome.exe --remote-debugging-port=9222
+start_browser_debug.bat
 ```
 
 Verify the install with the self-test harnesses (uses Notepad):
@@ -143,7 +145,8 @@ Connections are cached instead of re-created per command (auto-reconnect on drop
 - **Bookmarks / actions**: `bookmark_element`, `list_bookmarks`, `delete_bookmark`,
   `list_actions`, `run_action` — save frequently used elements by name,
   run parameterised multi-step sequences
-- **Web (CDP)**: `web_tabs`, `web_goto`, `web_page_info`, `web_click_element`,
+- **Web (CDP)**: `launch_browser` (start a debug browser — call this first),
+  `web_tabs`, `web_goto`, `web_page_info`, `web_click_element`,
   `web_type_text`, `web_read_text`, `web_find_elements`, `web_run_js`,
   `web_fill`, `web_wait`
 - **Win32 low-level** (fallback tier 2): `win32_find`, `win32_get_text`,
@@ -168,6 +171,28 @@ python cli.py --help
 
 Runs the same operations without an MCP client — handy for scheduled tasks
 and deterministic scripts.
+
+## Troubleshooting
+
+**Web tools fail with "Cannot connect to browser CDP".**
+The `web_*` tools need a browser running in CDP debug mode. Fix it either way:
+- Ask Claude to **"launch the browser"** (runs the `launch_browser` tool), or
+- Run **`start_browser_debug.bat`** in the ui-bridge folder.
+
+**I started Chrome with `--remote-debugging-port` but it still won't connect.**
+This is the most common trap: if a **normal Chrome window is already open**,
+Chrome forwards the flag to that existing instance and **no debug port opens**.
+Use `launch_browser` / `start_browser_debug.bat` (they launch an *isolated
+profile* that sidesteps this), or close **all** Chrome windows first.
+
+**The debug browser isn't logged into my sites.**
+It uses a separate profile (that's what avoids the clash above). Just log in
+once inside that window — the profile persists across runs.
+
+**Native (non-web) tools can't find my app.**
+Run `inspect_tree(window_title=...)` to see what's exposed. If it's nearly
+empty, the app hides from UI Automation — use the `win32_*` tools
+(`win32_find` with `visible_only=false`), and `screenshot_window` as a last resort.
 
 ## Security
 

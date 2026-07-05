@@ -42,6 +42,7 @@ from actions import (
 )
 from web_automation import (
     DEFAULT_CDP_URL,
+    launch_browser as _launch_browser,
     web_click,
     web_execute_js,
     web_fill_form,
@@ -59,7 +60,7 @@ import win32_native
 
 mcp = FastMCP(
     name="UiBridge",
-    version="0.2.0",
+    version="0.2.1",
     instructions=(
         "Control Windows desktop applications through UI Automation. "
         "No screenshots - all interaction flows through the Windows "
@@ -335,8 +336,29 @@ def run_action(
 # ── 5. Web (CDP) ──────────────────────────────────────────────────────────
 
 @mcp.tool()
+def launch_browser(cdp_url: str = "http://localhost:9222", url: str | None = None) -> dict:
+    """Start Chrome/Edge in CDP debug mode so the web_* tools can connect.
+
+    CALL THIS FIRST before any web_* tool if no debug browser is running (or
+    when a web_* call fails with a CDP connection error). Idempotent — does
+    nothing if a debug browser is already up.
+
+    Uses an isolated browser profile so it never conflicts with a normal
+    Chrome window you already have open (that conflict is the most common
+    reason web automation "silently" fails). Log into sites in THIS window;
+    the profile persists between runs.
+
+    Args:
+        cdp_url: CDP endpoint to open (default http://localhost:9222).
+        url: Optional page to open on launch.
+    """
+    return _launch_browser(cdp_url, url)
+
+
+@mcp.tool()
 def web_tabs(cdp_url: str = "http://localhost:9222") -> list[dict]:
-    """List all open browser tabs (requires Chrome/Edge with --remote-debugging-port=9222).
+    """List all open browser tabs. Requires a debug browser — if this errors,
+    call launch_browser first.
 
     Args:
         cdp_url: CDP endpoint URL (default: http://localhost:9222).

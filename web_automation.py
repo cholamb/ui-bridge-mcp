@@ -73,11 +73,14 @@ def _get_tabs(cdp_url: str = DEFAULT_CDP_URL) -> list[dict]:
             tried.append(url)
             continue
     raise ConnectionError(
-        f"Cannot connect to browser CDP (tried: {', '.join(tried)}). "
-        "Start Chrome with:\n"
-        '  chrome.exe --remote-debugging-port=9222\n'
-        "Or Edge with:\n"
-        '  msedge.exe --remote-debugging-port=9222'
+        f"Cannot connect to browser CDP (tried: {', '.join(tried)}).\n"
+        "FIX: call the `launch_browser` tool to start one automatically, or run "
+        "start_browser_debug.bat in the ui-bridge folder.\n"
+        "Manual: chrome.exe --remote-debugging-port=9222 --remote-allow-origins=* "
+        "--user-data-dir=%LOCALAPPDATA%\\ui-bridge-browser-9222\n"
+        "NOTE: a normal Chrome window that's ALREADY open will swallow the flag "
+        "and no port opens — use launch_browser (isolated profile) or close all "
+        "Chrome windows first."
     )
 
 
@@ -107,6 +110,87 @@ def _ws_connect(ws_url: str):
     ws = websocket.create_connection(ws_url, timeout=10, suppress_origin=True)
     _WS_CACHE[ws_url] = ws
     return ws
+
+
+# ── Browser launcher ──────────────────────────────────────────────────────
+
+_CHROME_CANDIDATES = [
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+]
+
+
+def _find_browser_exe() -> str | None:
+    env = os.environ.get("UIBRIDGE_BROWSER_EXE", "").strip()
+    if env and os.path.exists(env):
+        return env
+    for p in _CHROME_CANDIDATES:
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def launch_browser(cdp_url: str = DEFAULT_CDP_URL, url: str | None = None) -> dict:
+    """Start Chrome/Edge in CDP debug mode if it isn't already running.
+
+    Idempotent: if the port already answers, returns immediately. Uses an
+    isolated user-data-dir so it never collides with a normal browser that's
+    already open (the #1 reason plain --remote-debugging-port silently fails:
+    Chrome forwards the flag to the existing instance and no port opens).
+    """
+    port = cdp_url.rsplit(":", 1)[-1].split("/")[0]
+
+    # 이미 떠 있으면 그대로 사용(멱등)
+    try:
+        _fetch_tabs(cdp_url, timeout=1.5)
+        return {"status": "already_running", "cdp_url": cdp_url}
+    except Exception:
+        pass
+
+    exe = _find_browser_exe()
+    if not exe:
+        return {"status": "error",
+                "message": "Chrome/Edge not found. Set UIBRIDGE_BROWSER_EXE to the browser path."}
+
+    # 독립 프로필: 사용자의 평소 브라우저와 충돌하지 않게 별도 user-data-dir.
+    # 영속 경로라 이 브라우저에서 한 로그인은 다음에도 유지된다.
+    profile = os.path.join(
+        os.environ.get("LOCALAPPDATA", os.path.expanduser("~")),
+        f"ui-bridge-browser-{port}",
+    )
+    args = [
+        exe,
+        f"--remote-debugging-port={port}",
+        "--remote-allow-origins=*",
+        f"--user-data-dir={profile}",
+        "--no-first-run",
+        "--no-default-browser-check",
+    ]
+    if url:
+        args.append(url)
+
+    import subprocess
+
+    creationflags = 0x00000008 if os.name == "nt" else 0  # DETACHED_PROCESS
+    try:
+        subprocess.Popen(args, creationflags=creationflags,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to launch browser: {e}"}
+
+    # 기동 대기(최대 ~10초)
+    for _ in range(40):
+        time.sleep(0.25)
+        try:
+            _fetch_tabs(cdp_url, timeout=1.0)
+            return {"status": "launched", "cdp_url": cdp_url,
+                    "browser": os.path.basename(exe), "profile": profile}
+        except Exception:
+            continue
+    return {"status": "error",
+            "message": f"Browser started but CDP port {port} did not open in time."}
 
 
 def _ws_drop(ws_url: str) -> None:
